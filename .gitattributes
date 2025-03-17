@@ -1,1 +1,11 @@
 data/author_list.json.zip filter=lfs diff=lfs merge=lfs -text
+data/author_list_9.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_1.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_4.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_6.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_7.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_8.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_0.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_2.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_3.pkl filter=lfs diff=lfs merge=lfs -text
+data/author_list_5.pkl filter=lfs diff=lfs merge=lfs -text
