@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <title>Discipline-specific Insights </title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Gender Distribution in Scientific Fields</h2>
+
+    <label for="chartType">Select Chart Type:</label>
+    <select id="chartType" onchange="updateChart()"> 
+        <option value="bar">Bar Chart</option>
+        <option value="pie">Pie Chart</option>
+    </select>
+
+    <canvas id="myChart" width="600" height="200"></canvas>
+
+    <script>
+        let chartData;
+        let currentChart;
+        const ctx = document.getElementById("myChart").getContext("2d");
+
+        fetch("STEM_gender_publications.json")
+            .then(response => response.json())
+            .then(data => {
+                const labels = Object.keys(data);
+                const male = labels.map(field => data[field]["Male"] || 0);
+                const female = labels.map(field => data[field]["Female"] || 0);
+
+                chartData = {labels: labels, male: male, female: female};
+            updateChart();
+        });
+        
+        function createBarChart() {
+            return new Chart(ctx, {
+                type: 'bar', 
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Male',
+                            data: chartData.male,
+                            backgroundColor: 'rgba(128, 128, 128, 0.7)'
+                        },
+                        {
+                            label: 'Female',
+                            data: chartData.female, 
+                            backgroundColor: 'rgba(75, 192, 75, 0.7)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            ticks: {autoSkip: false, maxRotation: 45, minRotation: 45}
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {position: 'top'}, 
+                        title: {
+                            display: true, 
+                            text: 'Average Number of Publications by Gender and Field'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPieChart() {
+            const totalMale = chartData.male.reduce((a, b) => a + b, 0);
+            const totalFemale = chartData.female.reduce((a, b) => a + b, 0);
+            return new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [{
+                        data: [totalMale, totalFemale], 
+                        backgroundColor: [
+                            'rgba(128, 128, 128, 0.7)',
+                            'rgba(75, 192, 75, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive:true, 
+                    plugins: {
+                        legend: {position: 'top'},
+                        title: {
+                            display: true,
+                            text: 'Overall Gender Distribution (Total Publications)'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            const type = document.getElementById("chartType").value;
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            currentChart = (type === "bar") ? createBarChart() : createPieChart();
+        }
+    </script>
+</body>
+</html>
