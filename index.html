@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+(+)
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Author Collaboration Network</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        #network {
+            width: 100%;
+            height: 600px;
+            border: 1px solid lightgray;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="network"></div>
+    <script type="text/javascript">
+        async function fetchData(url) {
+            console.log(`Fetching data from: ${url}`); // Log the URL being fetched
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Failed to fetch ${url}: ${response.statusText}`); // Log the error
+                throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+            }
+            const data = await response.json();
+            console.log(`Data fetched successfully from: ${url}`, data); // Log the fetched data
+            return data;
+        }
+
+        async function createNetwork() {
+            try {
+                // Fetch authorship data
+                console.log('Fetching authorship data...');
+                const authorships = await fetchData('data/json/authorships.json');
+                console.log('Authorship data fetched.');
+
+                // Randomly select an authorship entry
+                const randomAuthorship = authorships[Math.floor(Math.random() * authorships.length)];
+                const randomAuthorId = randomAuthorship.author_id;
+                console.log(`Randomly selected author ID: ${randomAuthorId}`);
+
+                // Create a map of work to authors
+                const workToAuthors = {};
+                authorships.forEach(authorship => {
+                    if (!workToAuthors[authorship.id]) {
+                        workToAuthors[authorship.id] = [];
+                    }
+                    workToAuthors[authorship.id].push(authorship.author_id);
+                });
+                console.log('Work to authors map created.');
+
+                // Initialize nodes and edges
+                const nodes = new Map();
+                const edges = [];
+
+                // Add the randomly selected author to the nodes
+                nodes.set(randomAuthorId, { id: randomAuthorId, label: randomAuthorship.author_display_name });
+                console.log(`Added initial author node: ${randomAuthorId}`);
+
+                // Build the network from the selected author
+                for (const workId in workToAuthors) {
+                    const authorIds = workToAuthors[workId];
+                    if (authorIds.includes(randomAuthorId)) {
+                        authorIds.forEach(authorId => {
+                            if (authorId !== randomAuthorId) {
+                                nodes.set(authorId, {
+                                    id: authorId,
+                                    label: authorships.find(auth => auth.author_id === authorId).author_display_name
+                                });
+                                edges.push({ from: randomAuthorId, to: authorId });
+                                console.log(`Added edge: ${randomAuthorId} -> ${authorId}`);
+                            }
+                        });
+                    }
+                }
+                console.log('Network built.');
+
+                // Create a network
+                const container = document.getElementById('network');
+                const data = {
+                    nodes: new vis.DataSet(Array.from(nodes.values())),
+                    edges: new vis.DataSet(edges)
+                };
+                const options = {
+                    nodes: {
+                        shape: 'dot',
+                        size: 20,
+                        font: {
+                            size: 20
+                        }
+                    },
+                    edges: {
+                        width: 2
+                    },
+                    layout: {
+                        improvedLayout: true
+                    },
+                    physics: {
+                        enabled: false
+                    }
+                };
+                const network = new vis.Network(container, data, options);
+                console.log('Network created and rendered.');
+            } catch (error) {
+                console.error('Error creating network:', error);
+            }
+        }
+
+        // Execute the function to create the network
+        createNetwork();
+    </script>
+</body>
+
+</html>
